@@ -52,8 +52,8 @@ public class JsonRead {
 		} catch (ParseException pe) {
 			System.out.println(pe);
 			pe.printStackTrace();
-		} finally {
 			pw.close();
+		} finally {
 		}
 	}
 
