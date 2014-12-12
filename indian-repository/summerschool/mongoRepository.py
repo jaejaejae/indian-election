@@ -81,9 +81,13 @@ class MongoTweetsRepository(TweetRepository):
                 results = filter(
                     lambda tweet: tweet.retct <= value, results)
             elif key == "startTime":
-                pass
+                if first:
+                    results = map(self.toTweet, self.tweetCollection.find({"pub_time": {"$gte": value}}))
+                results = filter(lambda tweet: tweet.pub_time >= value, results)
             elif key == "endTime":
-                pass
+                if first:
+                    results = map(self.toTweet, self.tweetCollection.find({"pub_time": {"$lt": value}}))
+                results = filter(lambda tweet: tweet.pub_time <= value, results)
             elif key == "sentimentMin":
                 if first: results = self.getAllTweet()
                 results = filter(lambda tweet: tweet.sentiment>=value, results)
