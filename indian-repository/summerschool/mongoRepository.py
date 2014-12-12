@@ -18,6 +18,8 @@ class MongoTweetsRepository(TweetRepository):
         self.tweetCollection = self.db[DbConfig.TWEET_COL]
         self.userCollection = self.db[DbConfig.USER_COL]
 
+    def getAllTweet(self):
+        return map(self.toTweet, self.tweetCollection.find({}))
 
     def getTweet(self, **kwargs):
         """
@@ -54,27 +56,27 @@ class MongoTweetsRepository(TweetRepository):
                     results = filter(lambda tweet: tweet.uid == value, results)
             elif key == "geoX":
                 if first:
-                    tweets = map(self.toTweet, self.tweetCollection.find({}))
+                    tweets = self.getAllTweet()
                     results = tweets
                 results = filter(
                     lambda tweet: kwargs["geoX"] - kwargs["geoThreshold"] <= tweet.geo[0] <= kwargs["geoX"] + kwargs[
                         "geoThreshold"], results)
             elif key == "geoY":
                 if first:
-                    tweets = map(self.toTweet, self.tweetCollection.find({}))
+                    tweets = self.getAllTweet()
                     results = tweets
                 results = filter(
                     lambda tweet: kwargs["geoY"] - kwargs["geoThreshold"] <= tweet.geo[1] <= kwargs["geoY"] + kwargs[
                         "geoThreshold"], results)
             elif key == "retctMin":
                 if first:
-                    tweets = map(self.toTweet, self.tweetCollection.find({}))
+                    tweets = self.getAllTweet()
                     results = tweets
                 results = filter(
                     lambda tweet: value <= tweet.retct, results)
             elif key == "retctMax":
                 if first:
-                    tweets = map(self.toTweet, self.tweetCollection.find({}))
+                    tweets = self.getAllTweet()
                     results = tweets
                 results = filter(
                     lambda tweet: tweet.retct <= value, results)
@@ -83,11 +85,16 @@ class MongoTweetsRepository(TweetRepository):
             elif key == "endTime":
                 pass
             elif key == "sentimentMin":
-                pass
+                if first: results = self.getAllTweet()
+                results = filter(lambda tweet: tweet.sentiment>=value, results)
             elif key == "sentimentMax":
-                pass
+                if first: results = self.getAllTweet()
+                results = filter(lambda tweet: tweet.sentiment<=value, results)
             elif key == "dtf_oid":
-                pass
+                if first:
+                    results = map(self.toTweet, self.tweetCollection.find({"dtf_oid": value}))
+                else:
+                    results = filter(lambda tweet: tweet.dtf_oid == value, results)
             else:
                 print("invalid key values: " + str(key) + " " + str(value))
                 exit(-1)
@@ -101,7 +108,7 @@ class MongoTweetsRepository(TweetRepository):
         _id = jsonItem["_id"]
         tweet_id = jsonItem["id"]
         uid = jsonItem["uid"]
-        geo = parseGeo(jsonItem["geo"]) if 'geo' in jsonItem  else UNKNOWN_VALUE
+        geo = self.parseGeo(jsonItem["geo"]) if 'geo' in jsonItem  else UNKNOWN_VALUE
         retct = int(jsonItem["retct"]) if 'retct' in jsonItem  else UNKNOWN_VALUE
         url = jsonItem["url"] if 'url' in jsonItem  else UNKNOWN_VALUE
         uname = jsonItem["uname"] if 'uname' in jsonItem  else UNKNOWN_VALUE
