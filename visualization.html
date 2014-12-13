@@ -3,21 +3,69 @@
     <link href="c3.min.css" rel="stylesheet" type="text/css">
     <script src="d3.min.js" charset="utf-8"></script>
     <script src = "c3.min.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="jquery.csv-0.71.js"></script>
     </script>
 </head>
-    <body>
+    <body onload="loadRahulData()">
         <div id="chart">
         </div>
         <script type="text/javascript">
+            var PATH_FILE_SENTIMENTS_MODI = 'sentiment-result-small/sentiment-narendra.txt'
+            var PATH_FILE_SENTIMENTS_GANDHI = 'sentiment-result-small/sentiment-rahul.txt'
+            var PATH_FILE_SENTIMENTS_KEJRIWAL = 'sentiment-result-small/sentiment-arvind.txt'
+            var rahul_data;
+            var kejriwal_data;
+            var modi_data;
+            function loadRahulData() {
+                $.ajax(PATH_FILE_SENTIMENTS_GANDHI, {
+                    dataType: 'text',
+                    success: process_gandhi_data
+                });
+            }
+            function process_gandhi_data(data) {
+                rahul_data = $.csv.toObjects(data);
+                console.log(rahul_data);
+                loadArvindData();
+            }
+            function loadArvindData() {
+                $.ajax(PATH_FILE_SENTIMENTS_KEJRIWAL, {
+                    dataType: 'text',
+                    success: process_arvind_data
+                });
+            }
+            function process_arvind_data(data) {
+                kejriwal_data = $.csv.toObjects(data);
+                console.log(kejriwal_data);
+                loadModiData();
+            }
+            function loadModiData() {
+                $.ajax(PATH_FILE_SENTIMENTS_MODI, {
+                    dataType: 'text',
+                    success: process_modi_data
+                });
+            }
+            function process_modi_data(data) {
+                rahul_data = $.csv.toObjects(data);
+                console.log(modi_data);
+                parseData();
+            }
+            function parseData() {
+
+            }
+            function generate_list_of_dates() {
+                return -1;
+            }
             var chart = c3.generate({
                 data: {
                     x: 'x',
             //        xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
                     columns: [
-                        ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06'],
+                        ['x', '2013-12-01', '2014-01-01', '2014-02-01', '2014-03-01', '2014-04-01', '2014-05-01'],
             //            ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
-                        ['data1', 30, 200, 100, 400, 150, 250],
-                        ['data2', 130, 340, 200, 500, 250, 350]
+                        ['Narendra Modi', 3, 4, 5, 4, 4, 5],
+                        ['Rahul Gandhi', 1, 2, 2, 3, 2, 1],
+                        ['Arvind Kejriwal', 3, 2, 4, 5, 2, 3]
                     ]
                 },
                 axis: {
@@ -30,13 +78,13 @@
                 }
             });
 
-            setTimeout(function () {
-                chart.load({
-                    columns: [
-                        ['data3', 400, 500, 450, 700, 600, 500]
-                    ]
-                });
-            }, 1000);
+            // setTimeout(function () {
+            //     chart.load({
+            //         columns: [
+            //             ['data3', 400, 500, 450, 700, 600, 500]
+            //         ]
+            //     });
+            // }, 1000);
         </script>
     </body>
 </html>
