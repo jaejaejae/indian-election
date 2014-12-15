@@ -12,6 +12,9 @@
         <div id="chart">
         </div>
         <script type="text/javascript">
+            String.prototype.replaceAt=function(index, character) {
+                return this.substr(0, index) + character + this.substr(index+character.length);
+            }
             var PATH_FILE_SENTIMENTS_MODI = 'temporal/time_100.csv'
             var PATH_FILE_SENTIMENTS_GANDHI = 'temporal/time_109.csv'
             var PATH_FILE_SENTIMENTS_KEJRIWAL = 'temporal/time_110.csv'
@@ -84,12 +87,16 @@
                     }
                     else {
                         rng[i] = item.getYear().toString() + '-' + item.getMonth().toString() + '-' + item.getDate().toString();
+                        rng[i] = '2' + rng[i];
+                        rng[i] = rng[i].replaceAt(1, '0');
+                        console.log(rng[i]);
                     }
                 }
+                console.log(rng);
                 var chart = c3.generate({
                 data: {
                     x: 'x',
-                    // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+                    xFormat: '%Y-%m-%d', // 'xFormat' can be used as custom format of 'x'
                     columns: [
                         // ['x', '2013-12-01', '2014-01-01', '2014-02-01', '2014-03-01', '2014-04-01', '2014-05-01'],
                        // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
