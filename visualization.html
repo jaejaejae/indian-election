@@ -5,18 +5,41 @@
     <script src = "c3.min.js"></script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script src="jquery.csv-0.71.js"></script>
+    <script type="text/javascript" src="date.js"></script>
     </script>
 </head>
     <body onload="loadRahulData()">
         <div id="chart">
         </div>
         <script type="text/javascript">
-            var PATH_FILE_SENTIMENTS_MODI = 'sentiment-result-small/sentiment-narendra.txt'
-            var PATH_FILE_SENTIMENTS_GANDHI = 'sentiment-result-small/sentiment-rahul.txt'
-            var PATH_FILE_SENTIMENTS_KEJRIWAL = 'sentiment-result-small/sentiment-arvind.txt'
+            var PATH_FILE_SENTIMENTS_MODI = 'temporal/time_100.csv'
+            var PATH_FILE_SENTIMENTS_GANDHI = 'temporal/time_109.csv'
+            var PATH_FILE_SENTIMENTS_KEJRIWAL = 'temporal/time_110.csv'
             var rahul_data;
             var kejriwal_data;
             var modi_data;
+            var date_min;
+            var date_max;
+            var sentiment_value_modi = [];
+            var sentiment_value_gandhi = [];
+            var sentiment_value_kejriwal = [];
+            function expandRange(start, end) {// start and end are your two Date inputs
+                var range;
+                if (start.isBefore(end)) {
+                    start = start.clone();
+                    range = [];
+                    while (!start.same().day(end)) {
+                        range.push(start.clone());
+                        start.addDays(1);
+                    }
+                    range.push(end.clone());
+                    return range;
+                }
+                else {
+                    // arguments were passed in wrong order
+                    return expandRange(end, start);
+                }
+            }
             function loadRahulData() {
                 $.ajax(PATH_FILE_SENTIMENTS_GANDHI, {
                     dataType: 'text',
@@ -46,26 +69,35 @@
                 });
             }
             function process_modi_data(data) {
-                rahul_data = $.csv.toObjects(data);
+                modi_data = $.csv.toObjects(data);
                 console.log(modi_data);
-                parseData();
+                plotData();
             }
-            function parseData() {
-
-            }
-            function generate_list_of_dates() {
-                return -1;
-            }
-            var chart = c3.generate({
+            function plotData() {
+                find_min_and_max_dates();
+                rng = expandRange(date_min, date_max);
+                rng.unshift('x');
+                for (i in rng) {
+                    item = rng[i];
+                    if (i == 0) {
+                        continue;
+                    }
+                    else {
+                        rng[i] = item.getYear().toString() + '-' + item.getMonth().toString() + '-' + item.getDate().toString();
+                    }
+                }
+                var chart = c3.generate({
                 data: {
                     x: 'x',
-            //        xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+                    // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
                     columns: [
-                        ['x', '2013-12-01', '2014-01-01', '2014-02-01', '2014-03-01', '2014-04-01', '2014-05-01'],
-            //            ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
-                        ['Narendra Modi', 3, 4, 5, 4, 4, 5],
-                        ['Rahul Gandhi', 1, 2, 2, 3, 2, 1],
-                        ['Arvind Kejriwal', 3, 2, 4, 5, 2, 3]
+                        // ['x', '2013-12-01', '2014-01-01', '2014-02-01', '2014-03-01', '2014-04-01', '2014-05-01'],
+                       // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+                        rng,
+                    // ['A', 1, 2, 3, 4, 5, 6],
+                        sentiment_value_modi,
+                        sentiment_value_gandhi,
+                        sentiment_value_kejriwal
                     ]
                 },
                 axis: {
@@ -75,8 +107,59 @@
                             format: '%Y-%m-%d'
                         }
                     }
+                }});
+            }
+            function find_min_and_max_dates() {
+                date_min = new Date();
+                date_max = new Date(2013, 12, 15);
+                var count = 0;
+                for (i in modi_data) {
+                    item = modi_data[i];
+                    date_in_data = new Date(parseInt(item['year']), parseInt(item['month']), parseInt(item['day']));
+                    if (date_in_data.isBefore(date_min)) {
+                        date_min = date_in_data;
+                    }
+                    if (date_in_data.isAfter(date_max)) {
+                        date_max = date_in_data;
+                    }
+                    item_date = item['year'] + '-' + item['month'] + '-' + item['day'];
+                    sentiment_value_modi[count] = 1.0 * parseFloat(item['sum_scores_sentiment']) / parseFloat(item['num_tweets']);
+                    count = count + 1;
                 }
-            });
+                sentiment_value_modi.unshift('Narendra Modi');
+                console.log(sentiment_value_modi);
+                count = 0;
+                for (i in rahul_data) {
+                    item = rahul_data[i];
+                    date_in_data = new Date(item['year'], item['month'], item['day']);
+                    if (date_in_data.isBefore(date_min)) {
+                        date_min = date_in_data;
+                    }
+                    if (date_in_data.isAfter(date_max)) {
+                        date_max = date_in_data;
+                    }
+                    item_date = item['year'] + '-' + item['month'] + '-' + item['day'];
+                    sentiment_value_gandhi[count] = 1.0 * parseFloat(item['sum_scores_sentiment']) / parseFloat(item['num_tweets']);
+                    count = count + 1;
+                }
+                sentiment_value_gandhi.unshift('Rahul Gandhi');
+                count = 0;
+                for (i in kejriwal_data) {
+                    item = kejriwal_data[i];
+                    date_in_data = new Date(item['year'], item['month'], item['day']);
+                    if (date_in_data.isBefore(date_min)) {
+                        date_min = date_in_data;
+                    }
+                    if (date_in_data.isAfter(date_max)) {
+                        date_max = date_in_data;
+                    }
+                    item_date = item['year'] + '-' + item['month'] + '-' + item['day'];
+                    sentiment_value_kejriwal[count] = 1.0 * parseFloat(item['sum_scores_sentiment']) / parseFloat(item['num_tweets']);
+                    count = count + 1;
+                }
+                sentiment_value_kejriwal.unshift('Arvind Kejriwal');
+            }
+            
 
             // setTimeout(function () {
             //     chart.load({
